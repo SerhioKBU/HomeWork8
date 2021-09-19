@@ -36,20 +36,12 @@ public class TextRealisationFileContactService implements ContactService {
     }
 
         private void save(List<Contact> contacts){
-            FileWriter writer = null;
+            FileWriter writer;
             try {
                 writer = new FileWriter(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            for (Contact element: contacts) {
-                try {
+                for (Contact element: contacts) {
                     writer.write(element + System.getProperty("line.separator"));
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
-            try {
                 writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
