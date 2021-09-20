@@ -1,51 +1,52 @@
 package homework8.services;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import homework8.models.Contact;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class TextRealisationFileContactService implements ContactService {
+public class XMLRealisationFileContactService implements ContactService{
 
-    private File file;
+    final File file;
     List<Contact> contacts;
 
-    public TextRealisationFileContactService(File file) {
+    public XMLRealisationFileContactService(File file) {
         this.file = file;
         contacts = load();
     }
 
     private List<Contact> load() {
+
         if(!file.exists()){
             save(List.of());
         }
         List<Contact> contacts = new ArrayList<>();
+        XmlMapper xmlMapper = new XmlMapper();
         try (BufferedReader bufferedReader = new BufferedReader
                 (new FileReader(file))) {
-            contacts = bufferedReader.lines()
-                    .map(l -> l.split("|"))
-                    .map(c -> new Contact(c[0], c[1]))
-                    .collect(Collectors.toList());
-
+            for (Contact person: contacts) {
+                xmlMapper.readValue(bufferedReader, Contact.class);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return contacts;
     }
 
-        private void save(List<Contact> contacts){
-            try {
-                FileWriter writer = new FileWriter(file);
-                for (Contact element: contacts) {
-                    writer.write(element + System.getProperty("line.separator"));
-                }
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+    private void save(List<Contact> contacts){
+        XmlMapper xmlMapper = new XmlMapper();
+        xmlMapper.configure(ToXmlGenerator.Feature.WRITE_XML_DECLARATION, true);
+        try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8)) {
+            xmlMapper.writerWithDefaultPrettyPrinter().writeValue(fileWriter, contacts);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
     @Override
     public List<Contact> showAllContacts() {
@@ -79,9 +80,9 @@ public class TextRealisationFileContactService implements ContactService {
     public void saveContact(List<Contact> contacts) {
         try {
             FileWriter writer = new FileWriter("ContactsBook.txt");
-        for (Contact element: contacts) {
+            for (Contact element: contacts) {
                 writer.write(element + System.getProperty("line.separator"));
-        }
+            }
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
